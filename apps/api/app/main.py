@@ -11,6 +11,10 @@ from app.routers.patients import router as patients_router
 from app.routers.templates import router as templates_router
 from app.routers.vault import router as vault_router
 from app.routers.atom import router as atom_router
+from app.services.attachment_assist_jobs import (
+    initialize_attachment_assist_job_manager,
+    shutdown_attachment_assist_job_manager,
+)
 from app.services.patient_document_index import initialize_patient_document_indexer, shutdown_patient_document_indexer
 
 
@@ -26,9 +30,15 @@ async def lifespan(_: FastAPI):
         max_document_chars=settings.document_max_chars,
         binary_per_cycle_limit=settings.document_binary_per_cycle_limit,
     )
+    initialize_attachment_assist_job_manager(
+        jobs_path=settings.attachment_assist_jobs,
+        uploads_root=settings.uploads_root,
+        max_chars=settings.document_max_chars,
+    )
     try:
         yield
     finally:
+        shutdown_attachment_assist_job_manager()
         shutdown_patient_document_indexer()
 
 

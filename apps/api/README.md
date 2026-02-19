@@ -19,6 +19,11 @@
 - `POST /ingestion/patient`
 - `POST /ingestion/files`
 - `POST /ingestion/attachment-assist`
+- `POST /ingestion/attachment-assist/jobs`
+- `GET /ingestion/attachment-assist/jobs`
+- `GET /ingestion/attachment-assist/jobs/{job_id}`
+- `POST /ingestion/attachment-assist/jobs/{job_id}/review`
+- `POST /ingestion/attachment-assist/jobs/{job_id}/retry`
 - `POST /ingestion/patient-csv`
 - `POST /ingestion/import-proformas`
 - `GET /ingestion/cases`

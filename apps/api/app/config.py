@@ -9,6 +9,7 @@ DEFAULT_EVENT_STORE = PROJECT_ROOT / "apps" / "api" / "data" / "patient_events.j
 DEFAULT_UPLOADS_DIR = PROJECT_ROOT / "apps" / "api" / "data" / "uploads"
 DEFAULT_AUTO_NOTES_DIR = DEFAULT_VAULT_ROOT / "05-Logs" / "Auto-Patient-Entries"
 DEFAULT_DOCUMENT_INDEX_PATH = PROJECT_ROOT / "apps" / "api" / "data" / "patient_document_index.json"
+DEFAULT_ATTACHMENT_ASSIST_JOBS_PATH = PROJECT_ROOT / "apps" / "api" / "data" / "attachment_assist_jobs.json"
 
 
 class Settings(BaseSettings):
@@ -20,6 +21,7 @@ class Settings(BaseSettings):
     uploads_dir: Path = DEFAULT_UPLOADS_DIR
     auto_notes_dir: Path = DEFAULT_AUTO_NOTES_DIR
     document_index_path: Path = DEFAULT_DOCUMENT_INDEX_PATH
+    attachment_assist_jobs_path: Path = DEFAULT_ATTACHMENT_ASSIST_JOBS_PATH
     document_scan_interval_sec: float = 90.0
     marker_command: str = "marker_single"
     marker_timeout_sec: int = 60
@@ -58,6 +60,10 @@ class Settings(BaseSettings):
     @property
     def document_index(self) -> Path:
         return self.document_index_path
+
+    @property
+    def attachment_assist_jobs(self) -> Path:
+        return self.attachment_assist_jobs_path
 
 
 settings = Settings()

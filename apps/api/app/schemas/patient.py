@@ -1,6 +1,6 @@
 from datetime import date, datetime
 import re
-from typing import Literal
+from typing import Any, Literal
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
@@ -223,6 +223,20 @@ class UploadedFileDescriptor(BaseModel):
 class FileUploadAck(BaseModel):
     uploaded_count: int
     files: list[UploadedFileDescriptor]
+
+
+class AttachmentAssistReviewPayload(BaseModel):
+    decision: Literal["accepted", "rejected"]
+    reviewer_note: str | None = Field(default=None, max_length=2000)
+    applied_payload: dict[str, Any] = Field(default_factory=dict)
+
+    @field_validator("reviewer_note", mode="before")
+    @classmethod
+    def normalize_reviewer_note(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
+        text = value.strip()
+        return text or None
 
 
 class CsvRowError(BaseModel):

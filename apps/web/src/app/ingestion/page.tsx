@@ -1,12 +1,16 @@
 "use client";
 
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import {
-  assistIngestionAttachment,
+  createAttachmentAssistJob,
+  fetchAttachmentAssistJob,
+  fetchAttachmentAssistJobs,
   fetchIngestionCase,
   fetchIngestionCases,
   fetchTemplates,
   importVaultProformas,
+  reviewAttachmentAssistJob,
+  retryAttachmentAssistJob,
   submitPatient,
   submitPatientCsv,
   uploadPatientFiles
@@ -14,7 +18,7 @@ import {
 import { PageHeader } from "@/components/ui/PageHeader";
 import {
   CsvIngestionAck,
-  IngestionAttachmentAssistAck,
+  IngestionAttachmentAssistJob,
   IngestionCaseDetail,
   IngestionCaseSummary,
   ProformaImportAck,
@@ -358,8 +362,11 @@ export default function IngestionPage() {
   const [csvResult, setCsvResult] = useState<CsvIngestionAck | null>(null);
 
   const [attachments, setAttachments] = useState<File[]>([]);
-  const [assistedAttachments, setAssistedAttachments] = useState<IngestionAttachmentAssistAck[]>([]);
+  const [assistJobs, setAssistJobs] = useState<IngestionAttachmentAssistJob[]>([]);
   const [assistLoadingSection, setAssistLoadingSection] = useState<AttachmentAssistSection | null>(null);
+  const [assistError, setAssistError] = useState("");
+  const assistApplyingJobsRef = useRef<Record<string, boolean>>({});
+  const assistHandledJobsRef = useRef<Record<string, boolean>>({});
 
   const [labRows, setLabRows] = useState<MetricEntry[]>([createMetricRow()]);
   const [imagingRows, setImagingRows] = useState<ImagingEntry[]>([createImagingRow()]);
@@ -433,12 +440,12 @@ export default function IngestionPage() {
 
   const currentStepErrors = useMemo(() => validateCurrentStep(stepIndex, wizard, labRows, imagingRows), [stepIndex, wizard, labRows, imagingRows]);
   const labAssistItems = useMemo(
-    () => assistedAttachments.filter((item) => item.section === "lab"),
-    [assistedAttachments]
+    () => assistJobs.filter((item) => item.section === "lab"),
+    [assistJobs]
   );
   const imagingAssistItems = useMemo(
-    () => assistedAttachments.filter((item) => item.section === "imaging"),
-    [assistedAttachments]
+    () => assistJobs.filter((item) => item.section === "imaging"),
+    [assistJobs]
   );
 
   function setCoreField<K extends keyof WizardState>(key: K, value: WizardState[K]) {

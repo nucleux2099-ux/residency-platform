@@ -7,6 +7,7 @@ import {
   FileUploadAck,
   FollowupAnalytics,
   IngestionAttachmentAssistAck,
+  IngestionAttachmentAssistJob,
   IngestionCaseDetail,
   IngestionCaseSummary,
   IngestionAck,
@@ -147,6 +148,78 @@ export async function assistIngestionAttachment(
   }
 
   return postFormData<IngestionAttachmentAssistAck>("/ingestion/attachment-assist", formData);
+}
+
+export async function createAttachmentAssistJob(
+  file: File,
+  section: "lab" | "imaging",
+  patientId?: string
+) {
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("section", section);
+  if (patientId) {
+    formData.append("patient_id", patientId);
+  }
+
+  return postFormData<IngestionAttachmentAssistJob>("/ingestion/attachment-assist/jobs", formData);
+}
+
+export function fetchAttachmentAssistJobs(patientId?: string, status?: string, limit = 50) {
+  const params = new URLSearchParams();
+  params.set("limit", String(limit));
+  if (patientId && patientId.trim()) {
+    params.set("patient_id", patientId.trim());
+  }
+  if (status && status.trim()) {
+    params.set("status", status.trim());
+  }
+  return getJson<IngestionAttachmentAssistJob[]>(`/ingestion/attachment-assist/jobs?${params.toString()}`);
+}
+
+export function fetchAttachmentAssistJob(jobId: string) {
+  return getJson<IngestionAttachmentAssistJob>(`/ingestion/attachment-assist/jobs/${encodeURIComponent(jobId)}`);
+}
+
+export async function reviewAttachmentAssistJob(
+  jobId: string,
+  decision: "accepted" | "rejected",
+  reviewerNote?: string,
+  appliedPayload?: Record<string, unknown>
+) {
+  const res = await fetch(`${API_BASE_URL}/ingestion/attachment-assist/jobs/${encodeURIComponent(jobId)}/review`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      decision,
+      reviewer_note: reviewerNote,
+      applied_payload: appliedPayload || {}
+    })
+  });
+
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(text || `Request failed: ${res.status}`);
+  }
+
+  const body = (await res.json()) as ApiEnvelope<IngestionAttachmentAssistJob>;
+  return body.data;
+}
+
+export async function retryAttachmentAssistJob(jobId: string) {
+  const res = await fetch(`${API_BASE_URL}/ingestion/attachment-assist/jobs/${encodeURIComponent(jobId)}/retry`, {
+    method: "POST"
+  });
+
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(text || `Request failed: ${res.status}`);
+  }
+
+  const body = (await res.json()) as ApiEnvelope<IngestionAttachmentAssistJob>;
+  return body.data;
 }
 
 export async function submitPatientCsv(file: File) {

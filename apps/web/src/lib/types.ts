@@ -40,12 +40,12 @@ export interface PatientSubmission {
   encounter_date: string;
   diagnosis: string;
   visit_type:
-    | "baseline"
-    | "day7_reassessment"
-    | "discharge"
-    | "week2_followup"
-    | "month1_followup"
-    | "month3_followup";
+  | "baseline"
+  | "day7_reassessment"
+  | "discharge"
+  | "week2_followup"
+  | "month1_followup"
+  | "month3_followup";
   svt_status: "with_svt" | "without_svt";
   ward: string;
   cohort_status: "screened" | "enrolled" | "active" | "completed" | "terminal_outcome";
@@ -181,6 +181,38 @@ export interface IngestionAttachmentAssistAck {
   extraction_error: string | null;
   extracted_text_preview: string;
   suggestions: IngestionAssistSuggestions;
+}
+
+export interface IngestionAttachmentAssistAnalysis {
+  section: "lab" | "imaging" | string;
+  extraction_status: "ok" | "failed" | string;
+  extractor: string;
+  extraction_error: string | null;
+  extracted_text_preview: string;
+  suggestions: IngestionAssistSuggestions;
+}
+
+export interface IngestionAttachmentAssistReview {
+  status: "not_ready" | "pending_review" | "accepted" | "rejected" | string;
+  decision: "accepted" | "rejected" | null;
+  reviewed_at: string | null;
+  reviewer_note: string | null;
+  applied_payload: Record<string, unknown> | null;
+}
+
+export interface IngestionAttachmentAssistJob {
+  job_id: string;
+  status: "queued" | "processing" | "completed" | "failed" | string;
+  section: "lab" | "imaging" | string;
+  patient_id: string | null;
+  created_at: string;
+  updated_at: string;
+  started_at: string | null;
+  finished_at: string | null;
+  error: string | null;
+  uploaded_file: UploadedFileDescriptor;
+  result: IngestionAttachmentAssistAnalysis | null;
+  review: IngestionAttachmentAssistReview;
 }
 
 export interface CsvRowError {
@@ -405,5 +437,27 @@ export interface PatientLabTrendMetric {
 export interface PatientLabTrendPayload {
   reports_considered: number;
   points_total: number;
-  metrics: PatientLabTrendMetric[];
+export interface IngestionAttachmentAssistJob {
+  job_id: string;
+  status: "queued" | "processing" | "completed" | "failed" | string;
+  section: "lab" | "imaging" | string;
+  patient_id: string | null;
+  created_at: string;
+  updated_at: string;
+  started_at: string | null;
+  finished_at: string | null;
+  error: string | null;
+  uploaded_file: {
+    file_name: string;
+    stored_path: string;
+    size_bytes: number;
+  };
+  result: IngestionAttachmentAssistAck | null;
+  review: {
+    status: "not_ready" | "pending_review" | "accepted" | "rejected" | string;
+    decision: "accepted" | "rejected" | null;
+    reviewed_at: string | null;
+    reviewer_note: string | null;
+    applied_payload: Record<string, unknown> | null;
+  };
 }

@@ -4,7 +4,6 @@ import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import {
   createAttachmentAssistJob,
   fetchAttachmentAssistJob,
-  fetchAttachmentAssistJobs,
   fetchIngestionCase,
   fetchIngestionCases,
   fetchTemplates,
@@ -447,10 +446,118 @@ export default function IngestionPage() {
     () => assistJobs.filter((item) => item.section === "imaging"),
     [assistJobs]
   );
+  const assistedStoredPaths = useMemo(
+    () =>
+      Array.from(
+        new Set(
+          assistJobs
+            .map((item) => item.uploaded_file.stored_path)
+            .filter((item) => item && item.trim())
+        )
+      ),
+    [assistJobs]
+  );
 
   function setCoreField<K extends keyof WizardState>(key: K, value: WizardState[K]) {
     setWizard((current) => ({ ...current, [key]: value }));
   }
+
+  function resetAssistJobs() {
+    setAssistJobs([]);
+    setAssistError("");
+    assistApplyingJobsRef.current = {};
+    assistHandledJobsRef.current = {};
+  }
+
+  function upsertAssistJobs(incoming: IngestionAttachmentAssistJob | IngestionAttachmentAssistJob[]) {
+    const batch = Array.isArray(incoming) ? incoming : [incoming];
+    if (batch.length === 0) {
+      return;
+    }
+
+    setAssistJobs((current) => {
+      const map = new Map(current.map((item) => [item.job_id, item]));
+      let changed = false;
+
+      for (const item of batch) {
+        const previous = map.get(item.job_id);
+        if (
+          !previous ||
+          previous.updated_at !== item.updated_at ||
+          previous.status !== item.status ||
+          previous.review.status !== item.review.status ||
+          previous.error !== item.error
+        ) {
+          changed = true;
+        }
+        map.set(item.job_id, item);
+      }
+
+      if (!changed && map.size === current.length) {
+        return current;
+      }
+
+      return Array.from(map.values()).sort((a, b) => b.created_at.localeCompare(a.created_at));
+    });
+  }
+
+  async function handleAssistRetry(jobId: string) {
+    try {
+      const retried = await retryAttachmentAssistJob(jobId);
+      delete assistApplyingJobsRef.current[jobId];
+      delete assistHandledJobsRef.current[jobId];
+      upsertAssistJobs(retried);
+      setAssistError("");
+      setStatus(`Retry queued for ${retried.uploaded_file.file_name}.`);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Retry failed";
+      setAssistError(message);
+      setStatus(`Retry failed: ${message}`);
+    }
+  }
+
+  useEffect(() => {
+    const pendingIds = assistJobs
+      .filter((item) => item.status === "queued" || item.status === "processing")
+      .map((item) => item.job_id);
+
+    if (pendingIds.length === 0) {
+      return;
+    }
+
+    let cancelled = false;
+
+    const poll = async () => {
+      const updates = await Promise.all(
+        pendingIds.map(async (jobId) => {
+          try {
+            return await fetchAttachmentAssistJob(jobId);
+          } catch {
+            return null;
+          }
+        })
+      );
+
+      if (cancelled) {
+        return;
+      }
+
+      const validUpdates = updates.filter((item): item is IngestionAttachmentAssistJob => item !== null);
+      if (validUpdates.length > 0) {
+        upsertAssistJobs(validUpdates);
+      }
+    };
+
+    void poll();
+    const timer = window.setInterval(() => {
+      void poll();
+    }, 1800);
+
+    return () => {
+      cancelled = true;
+      window.clearInterval(timer);
+    };
+  }, [assistJobs]);
 
   function setExtraField(key: string, value: string) {
     setWizard((current) => ({
@@ -573,6 +680,73 @@ export default function IngestionPage() {
     return appliedCount;
   }
 
+  useEffect(() => {
+    const readyForReview = assistJobs.filter(
+      (item) =>
+        item.status === "completed" &&
+        item.review.status === "pending_review" &&
+        Boolean(item.result?.suggestions)
+    );
+
+    if (readyForReview.length === 0) {
+      return;
+    }
+
+    for (const job of readyForReview) {
+      if (assistHandledJobsRef.current[job.job_id] || assistApplyingJobsRef.current[job.job_id]) {
+        continue;
+      }
+
+      assistApplyingJobsRef.current[job.job_id] = true;
+
+      void (async () => {
+        const suggestions = job.result?.suggestions;
+        if (!suggestions) {
+          delete assistApplyingJobsRef.current[job.job_id];
+          return;
+        }
+
+        try {
+          const labAdded = suggestions.lab_entries.length;
+          const imagingAdded = suggestions.imaging_entries.length;
+
+          if (labAdded > 0) {
+            mergeLabAssistRows(suggestions.lab_entries);
+          }
+          if (imagingAdded > 0) {
+            mergeImagingAssistRows(suggestions.imaging_entries);
+          }
+          const extraApplied = applySuggestedExtraFields(suggestions.extra_fields);
+
+          const reviewed = await reviewAttachmentAssistJob(
+            job.job_id,
+            "accepted",
+            "Auto-applied from ingestion wizard",
+            {
+              lab_rows_added: labAdded,
+              imaging_rows_added: imagingAdded,
+              extra_fields_applied: extraApplied,
+            }
+          );
+
+          upsertAssistJobs(reviewed);
+          assistHandledJobsRef.current[job.job_id] = true;
+          setAssistError("");
+          setStatus(
+            `OCR completed for ${job.uploaded_file.file_name}: added ${labAdded + imagingAdded} rows and ${extraApplied} mapped fields.`
+          );
+        } catch (err) {
+          const message = err instanceof Error ? err.message : "Unable to review OCR result";
+          assistHandledJobsRef.current[job.job_id] = true;
+          setAssistError(message);
+          setStatus(`OCR review failed for ${job.uploaded_file.file_name}: ${message}`);
+        } finally {
+          delete assistApplyingJobsRef.current[job.job_id];
+        }
+      })();
+    }
+  }, [assistJobs]);
+
   async function handleAssistUpload(section: AttachmentAssistSection, files: FileList | null) {
     const selected = Array.from(files || []);
     if (selected.length === 0) {
@@ -580,28 +754,22 @@ export default function IngestionPage() {
     }
 
     setAssistLoadingSection(section);
+    setAssistError("");
 
     try {
+      let queuedCount = 0;
       for (const file of selected) {
-        const result = await assistIngestionAttachment(file, section, wizard.patient_id.trim() || undefined);
-        setAssistedAttachments((current) => [result, ...current]);
-
-        if (result.suggestions.lab_entries.length > 0) {
-          mergeLabAssistRows(result.suggestions.lab_entries);
-        }
-        if (result.suggestions.imaging_entries.length > 0) {
-          mergeImagingAssistRows(result.suggestions.imaging_entries);
-        }
-
-        const extraApplied = applySuggestedExtraFields(result.suggestions.extra_fields);
-        const note =
-          result.extraction_status === "ok"
-            ? `Auto-fill complete for ${file.name}. Added ${result.suggestions.lab_entries.length + result.suggestions.imaging_entries.length} table rows and ${extraApplied} mapped fields.`
-            : `Auto-fill failed for ${file.name}: ${result.extraction_error || "unknown error"}`;
-        setStatus(note);
+        const queued = await createAttachmentAssistJob(file, section, wizard.patient_id.trim() || undefined);
+        upsertAssistJobs(queued);
+        delete assistHandledJobsRef.current[queued.job_id];
+        delete assistApplyingJobsRef.current[queued.job_id];
+        queuedCount += 1;
       }
+
+      setStatus(`Queued ${queuedCount} ${section} OCR job${queuedCount === 1 ? "" : "s"}.`);
     } catch (err) {
       const message = err instanceof Error ? err.message : "Attachment auto-fill failed";
+      setAssistError(message);
       setStatus(`Attachment auto-fill failed: ${message}`);
     } finally {
       setAssistLoadingSection(null);
@@ -623,7 +791,7 @@ export default function IngestionPage() {
     setImagingRows(draft.imaging_rows.length > 0 ? draft.imaging_rows : [createImagingRow()]);
     setInterventionRows(draft.intervention_rows.length > 0 ? draft.intervention_rows : [createInterventionRow()]);
     setAttachments([]);
-    setAssistedAttachments([]);
+    resetAssistJobs();
     setPane("wizard");
     setStatus(`Loaded draft ${draft.label}.`);
   }
@@ -634,7 +802,7 @@ export default function IngestionPage() {
     setImagingRows([createImagingRow()]);
     setInterventionRows([createInterventionRow()]);
     setAttachments([]);
-    setAssistedAttachments([]);
+    resetAssistJobs();
     setStepIndex(0);
     setStatus("New form started.");
   }
@@ -698,7 +866,7 @@ export default function IngestionPage() {
     setImagingRows(rowsImaging);
     setInterventionRows(rowsIntervention);
     setAttachments([]);
-    setAssistedAttachments([]);
+    resetAssistJobs();
     setPane("wizard");
     setStepIndex(0);
     setStatus(`Loaded case ${detail.summary.patient_id}. Submitting will create a new revision event.`);
@@ -758,7 +926,7 @@ export default function IngestionPage() {
     setStatus("Submitting patient record...");
 
     try {
-      let storedFiles: string[] = assistedAttachments.map((item) => item.uploaded_file.stored_path);
+      let storedFiles: string[] = [...assistedStoredPaths];
 
       if (attachments.length > 0) {
         setStatus("Uploading attachments...");
@@ -798,7 +966,7 @@ export default function IngestionPage() {
       const submittedDraftId = getDraftIdFromWizard(wizard);
       removeDraft(submittedDraftId);
       setAttachments([]);
-      setAssistedAttachments([]);
+      resetAssistJobs();
 
       await refreshCases(caseQuery);
     } catch (err) {
@@ -1113,6 +1281,7 @@ export default function IngestionPage() {
                 }}
               />
               {assistLoadingSection === "lab" ? <p className="text-muted">Processing lab attachment...</p> : null}
+              {assistError ? <p className="wizard-error">{assistError}</p> : null}
 
               {labAssistItems.length > 0 ? (
                 <div className="assist-uploader__list">
@@ -1120,17 +1289,26 @@ export default function IngestionPage() {
                     <article key={`${item.uploaded_file.stored_path}-lab`} className="assist-uploader__item">
                       <strong>{item.uploaded_file.file_name}</strong>
                       <small>
-                        {item.extraction_status === "ok" ? "Parsed" : "Failed"} via {item.extractor}
+                        {item.status} | review: {item.review.status} | {item.result?.extractor || "marker"}
                       </small>
-                      <p>
-                        Added {item.suggestions.lab_entries.length} lab rows from this report.
-                      </p>
-                      {item.suggestions.review_notes.length > 0 ? (
+                      {item.status === "failed" ? (
+                        <p>OCR failed: {item.error || item.result?.extraction_error || "unknown error"}</p>
+                      ) : item.status === "completed" ? (
+                        <p>Added {item.result?.suggestions.lab_entries.length || 0} lab rows from this report.</p>
+                      ) : (
+                        <p>OCR is running. This card updates automatically.</p>
+                      )}
+                      {item.result?.suggestions.review_notes && item.result.suggestions.review_notes.length > 0 ? (
                         <ul>
-                          {item.suggestions.review_notes.slice(0, 2).map((note) => (
+                          {item.result.suggestions.review_notes.slice(0, 2).map((note) => (
                             <li key={`${item.uploaded_file.stored_path}-${note}`}>{note}</li>
                           ))}
                         </ul>
+                      ) : null}
+                      {item.status === "failed" ? (
+                        <button type="button" onClick={() => void handleAssistRetry(item.job_id)}>
+                          Retry OCR
+                        </button>
                       ) : null}
                     </article>
                   ))}
@@ -1184,6 +1362,7 @@ export default function IngestionPage() {
                 }}
               />
               {assistLoadingSection === "imaging" ? <p className="text-muted">Processing imaging attachment...</p> : null}
+              {assistError ? <p className="wizard-error">{assistError}</p> : null}
 
               {imagingAssistItems.length > 0 ? (
                 <div className="assist-uploader__list">
@@ -1191,17 +1370,29 @@ export default function IngestionPage() {
                     <article key={`${item.uploaded_file.stored_path}-imaging`} className="assist-uploader__item">
                       <strong>{item.uploaded_file.file_name}</strong>
                       <small>
-                        {item.extraction_status === "ok" ? "Parsed" : "Failed"} via {item.extractor}
+                        {item.status} | review: {item.review.status} | {item.result?.extractor || "marker"}
                       </small>
-                      <p>
-                        Added {item.suggestions.imaging_entries.length} imaging rows and {Object.keys(item.suggestions.extra_fields).length} mapped fields.
-                      </p>
-                      {item.suggestions.review_notes.length > 0 ? (
+                      {item.status === "failed" ? (
+                        <p>OCR failed: {item.error || item.result?.extraction_error || "unknown error"}</p>
+                      ) : item.status === "completed" ? (
+                        <p>
+                          Added {item.result?.suggestions.imaging_entries.length || 0} imaging rows and{" "}
+                          {Object.keys(item.result?.suggestions.extra_fields || {}).length} mapped fields.
+                        </p>
+                      ) : (
+                        <p>OCR is running. This card updates automatically.</p>
+                      )}
+                      {item.result?.suggestions.review_notes && item.result.suggestions.review_notes.length > 0 ? (
                         <ul>
-                          {item.suggestions.review_notes.slice(0, 2).map((note) => (
+                          {item.result.suggestions.review_notes.slice(0, 2).map((note) => (
                             <li key={`${item.uploaded_file.stored_path}-${note}`}>{note}</li>
                           ))}
                         </ul>
+                      ) : null}
+                      {item.status === "failed" ? (
+                        <button type="button" onClick={() => void handleAssistRetry(item.job_id)}>
+                          Retry OCR
+                        </button>
                       ) : null}
                     </article>
                   ))}
@@ -1454,13 +1645,13 @@ export default function IngestionPage() {
           <p className="text-muted">Attach any additional files. Lab/imaging auto-fill uploads from step 3 are already included.</p>
           <input type="file" multiple onChange={(event) => setAttachments(Array.from(event.target.files || []))} />
 
-          {assistedAttachments.length > 0 ? (
+          {assistJobs.length > 0 ? (
             <div className="assist-uploader__list" style={{ marginTop: 10 }}>
-              {assistedAttachments.slice(0, 12).map((item) => (
+              {assistJobs.slice(0, 12).map((item) => (
                 <article key={`${item.uploaded_file.stored_path}-review`} className="assist-uploader__item">
                   <strong>{item.uploaded_file.file_name}</strong>
                   <small>
-                    {item.section} | stored | {item.extractor}
+                    {item.section} | {item.status} | review: {item.review.status}
                   </small>
                   <p>{item.uploaded_file.stored_path}</p>
                 </article>
@@ -1518,7 +1709,7 @@ export default function IngestionPage() {
             </div>
             <div>
               <strong>Attachments</strong>
-              <p>{attachments.length + assistedAttachments.length}</p>
+              <p>{attachments.length + assistedStoredPaths.length}</p>
             </div>
             <div>
               <strong>Protocol Fields Captured</strong>

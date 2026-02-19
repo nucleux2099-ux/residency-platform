@@ -9,10 +9,14 @@ interface KpiCardProps {
     label: string;
   };
   status?: "default" | "info" | "success" | "warning" | "danger";
+  tone?: "default" | "info" | "success" | "warning" | "danger";
   helperText?: string;
+  helper?: string;
 }
 
-export function KpiCard({ label, value, icon: Icon, status = "default", helperText }: KpiCardProps) {
+export function KpiCard({ label, value, icon: Icon, status = "default", tone, helperText, helper }: KpiCardProps) {
+  const resolvedStatus = tone || status;
+  const resolvedHelper = helperText || helper;
   const statusStyles = {
     default: "border-slate-200",
     info: "border-primary-200 bg-primary-50/30",
@@ -24,7 +28,7 @@ export function KpiCard({ label, value, icon: Icon, status = "default", helperTe
   return (
     <div className={`
       relative overflow-hidden rounded-xl border bg-white p-5 shadow-sm transition-all hover:shadow-md
-      ${statusStyles[status]}
+      ${statusStyles[resolvedStatus]}
     `}>
       <div className="flex items-center justify-between mb-2">
         <span className="text-sm font-semibold text-slate-500 tracking-wide uppercase">{label}</span>
@@ -35,9 +39,9 @@ export function KpiCard({ label, value, icon: Icon, status = "default", helperTe
         <span className="text-3xl font-bold text-slate-900 tracking-tight">{value}</span>
       </div>
 
-      {helperText && (
+      {resolvedHelper && (
         <p className="mt-2 text-xs text-slate-400 font-medium">
-          {helperText}
+          {resolvedHelper}
         </p>
       )}
     </div>

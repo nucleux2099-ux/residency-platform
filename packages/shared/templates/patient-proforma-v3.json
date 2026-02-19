@@ -1,0 +1,339 @@
+{
+  "template_id": "patient-proforma-v3",
+  "version": 3,
+  "title": "AIIMS SVT Thesis Proforma Intake (Full)",
+  "required_fields": [
+    "patient_id",
+    "encounter_date",
+    "diagnosis",
+    "visit_type",
+    "svt_status",
+    "ward",
+    "cohort_status"
+  ],
+  "fields": [
+    {
+      "key": "patient_id",
+      "label": "Study ID (pseudonymous)",
+      "type": "string"
+    },
+    {
+      "key": "encounter_date",
+      "label": "Assessment Date",
+      "type": "date"
+    },
+    {
+      "key": "diagnosis",
+      "label": "Primary Diagnosis",
+      "type": "string"
+    },
+    {
+      "key": "visit_type",
+      "label": "Protocol Visit Type",
+      "type": "enum",
+      "options": [
+        "baseline",
+        "day7_reassessment",
+        "discharge",
+        "week2_followup",
+        "month1_followup",
+        "month3_followup"
+      ]
+    },
+    {
+      "key": "svt_status",
+      "label": "SVT Status",
+      "type": "enum",
+      "options": ["with_svt", "without_svt"]
+    },
+    {
+      "key": "vessel_involvement",
+      "label": "Vessels Involved",
+      "type": "enum_list",
+      "options": ["pv", "smv", "sv", "multiple", "unknown"],
+      "required_when": {
+        "svt_status": "with_svt"
+      }
+    },
+    {
+      "key": "ward",
+      "label": "Ward / Unit",
+      "type": "string"
+    },
+    {
+      "key": "cohort_status",
+      "label": "Cohort Status",
+      "type": "enum",
+      "options": ["screened", "enrolled", "active", "completed", "terminal_outcome"]
+    },
+    {
+      "key": "mortality",
+      "label": "Mortality",
+      "type": "enum",
+      "options": ["yes", "no"]
+    },
+    {
+      "key": "death_date",
+      "label": "Date of Death",
+      "type": "date",
+      "required_when": {
+        "mortality": "yes"
+      }
+    },
+    {
+      "key": "cause_of_death",
+      "label": "Cause of Death",
+      "type": "string",
+      "required_when": {
+        "mortality": "yes"
+      }
+    },
+    {
+      "key": "recanalization_status",
+      "label": "SVT Recanalization",
+      "type": "enum",
+      "options": ["pending", "complete", "partial", "none", "progressed", "not_applicable"]
+    },
+    {
+      "key": "primary_endpoint_complete",
+      "label": "Primary Endpoint Complete",
+      "type": "enum",
+      "options": [true, false]
+    },
+    {
+      "key": "notes",
+      "label": "Clinical Notes",
+      "type": "string"
+    },
+    {
+      "key": "demographics__age_sex",
+      "label": "Demographics - Age / Sex",
+      "type": "string"
+    },
+    {
+      "key": "demographics__opd_ipd",
+      "label": "Demographics - OPD/IPD",
+      "type": "string"
+    },
+    {
+      "key": "demographics__date_of_admission",
+      "label": "Demographics - Date of Admission",
+      "type": "string"
+    },
+    {
+      "key": "demographics__date_of_discharge",
+      "label": "Demographics - Date of Discharge",
+      "type": "string"
+    },
+    {
+      "key": "demographics__weight_height",
+      "label": "Demographics - Weight / Height",
+      "type": "string"
+    },
+    {
+      "key": "demographics__bmi",
+      "label": "Demographics - BMI",
+      "type": "string"
+    },
+    {
+      "key": "addictions__alcohol",
+      "label": "Addictions - Alcohol",
+      "type": "string"
+    },
+    {
+      "key": "addictions__smoking",
+      "label": "Addictions - Smoking",
+      "type": "string"
+    },
+    {
+      "key": "addictions__tobacco_chewing",
+      "label": "Addictions - Tobacco Chewing",
+      "type": "string"
+    },
+    {
+      "key": "clinical_details__index_pain",
+      "label": "Clinical - Index Pain",
+      "type": "string"
+    },
+    {
+      "key": "clinical_details__site",
+      "label": "Clinical - Pain Site",
+      "type": "string"
+    },
+    {
+      "key": "clinical_details__severity_vas_1_10",
+      "label": "Clinical - VAS Pain Score",
+      "type": "string"
+    },
+    {
+      "key": "clinical_details__vomiting",
+      "label": "Clinical - Vomiting",
+      "type": "string"
+    },
+    {
+      "key": "clinical_details__fever",
+      "label": "Clinical - Fever",
+      "type": "string"
+    },
+    {
+      "key": "clinical_details__jaundice",
+      "label": "Clinical - Jaundice",
+      "type": "string"
+    },
+    {
+      "key": "clinical_details__ascites",
+      "label": "Clinical - Ascites",
+      "type": "string"
+    },
+    {
+      "key": "clinical_details__splenomegaly",
+      "label": "Clinical - Splenomegaly",
+      "type": "string"
+    },
+    {
+      "key": "comorbidities__dm",
+      "label": "Comorbidity - DM",
+      "type": "string"
+    },
+    {
+      "key": "comorbidities__htn",
+      "label": "Comorbidity - HTN",
+      "type": "string"
+    },
+    {
+      "key": "comorbidities__cad",
+      "label": "Comorbidity - CAD",
+      "type": "string"
+    },
+    {
+      "key": "comorbidities__known_coagulopathy_disorder",
+      "label": "Comorbidity - Known Coagulopathy",
+      "type": "string"
+    },
+    {
+      "key": "etiology_of_acute_pancreatitis__etiology",
+      "label": "Etiology of Acute Pancreatitis",
+      "type": "string"
+    },
+    {
+      "key": "acute_pancreatitis__revised_atlanta_severity_grade",
+      "label": "Acute Pancreatitis - Revised Atlanta Grade",
+      "type": "string"
+    },
+    {
+      "key": "acute_pancreatitis__modified_ct_severity_score",
+      "label": "Acute Pancreatitis - Modified CTSI",
+      "type": "string"
+    },
+    {
+      "key": "acute_pancreatitis__pancreatic_necrosis",
+      "label": "Acute Pancreatitis - Pancreatic Necrosis",
+      "type": "string"
+    },
+    {
+      "key": "vascular_splanchnic__venous_thrombosis",
+      "label": "Vascular - Venous Thrombosis",
+      "type": "string"
+    },
+    {
+      "key": "splanchnic_venous_assessment__portal_vein_pv",
+      "label": "Splanchnic Assessment - Portal Vein",
+      "type": "string"
+    },
+    {
+      "key": "splanchnic_venous_assessment__superior_mesenteric_vein_smv",
+      "label": "Splanchnic Assessment - SMV",
+      "type": "string"
+    },
+    {
+      "key": "splanchnic_venous_assessment__splenic_vein_sv",
+      "label": "Splanchnic Assessment - Splenic Vein",
+      "type": "string"
+    },
+    {
+      "key": "portal_hypertensive_changes__splenomegaly",
+      "label": "Portal Hypertension - Splenomegaly",
+      "type": "string"
+    },
+    {
+      "key": "portal_hypertensive_changes__ascites",
+      "label": "Portal Hypertension - Ascites",
+      "type": "string"
+    },
+    {
+      "key": "portal_hypertensive_changes__varices",
+      "label": "Portal Hypertension - Varices",
+      "type": "string"
+    },
+    {
+      "key": "vascular_complications__arterial_pseudoaneurysm",
+      "label": "Vascular Complications - Arterial Pseudoaneurysm",
+      "type": "string"
+    },
+    {
+      "key": "vascular_complications__splenic_infarction",
+      "label": "Vascular Complications - Splenic Infarction",
+      "type": "string"
+    },
+    {
+      "key": "management__intervention",
+      "label": "Management - Intervention",
+      "type": "string"
+    },
+    {
+      "key": "management__first_intervention",
+      "label": "Management - First Intervention",
+      "type": "string"
+    },
+    {
+      "key": "management__anticoagulation_therapy",
+      "label": "Management - Anticoagulation Therapy",
+      "type": "string"
+    },
+    {
+      "key": "outcomes__icu_stay",
+      "label": "Outcomes - ICU Stay",
+      "type": "string"
+    },
+    {
+      "key": "outcomes__total_hospital_stay",
+      "label": "Outcomes - Total Hospital Stay",
+      "type": "string"
+    },
+    {
+      "key": "outcomes__morbidity",
+      "label": "Outcomes - Morbidity",
+      "type": "string"
+    },
+    {
+      "key": "follow_up__last_follow_up_date",
+      "label": "Follow-up - Last Follow-up Date",
+      "type": "string"
+    },
+    {
+      "key": "status_at_last_follow_up__vascular_status",
+      "label": "Last Follow-up - Vascular Status",
+      "type": "string"
+    },
+    {
+      "key": "status_at_last_follow_up__portal_hypertension",
+      "label": "Last Follow-up - Portal Hypertension",
+      "type": "string"
+    },
+    {
+      "key": "other_relevant_morbidity_complications",
+      "label": "Other Relevant Morbidity / Complications",
+      "type": "string"
+    },
+    {
+      "key": "data_collected_by",
+      "label": "Data Collected By",
+      "type": "string"
+    },
+    {
+      "key": "extra_fields",
+      "label": "Additional Proforma Fields",
+      "type": "object"
+    }
+  ]
+}

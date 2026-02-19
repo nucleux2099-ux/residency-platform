@@ -1,0 +1,14 @@
+template_id,patient_id,encounter_date,visit_type,svt_status,cohort_status,mortality,vessel_involvement,recanalization_status,primary_endpoint_complete,ward,diagnosis,demographics__age_sex,death_date,cause_of_death,Age,etiology_of_acute_pancreatitis__etiology,Name,BMI,Etiology,Sex
+patient-proforma-v3,AP-NSVT-001,2025-08-18,baseline,without_svt,active,,,not_applicable,false,Unknown,Acute Pancreatitis,43 / Male,,,43,Alcohol,Jay Karoria,33.8,Alcohol,Male
+patient-proforma-v3,AP-NSVT-002,2025-09-15,baseline,without_svt,enrolled,,,not_applicable,false,Unknown,Acute Pancreatitis,55 / Male,,,55,Biliary (Gallstone),Kewal Kishan,23.0,Biliary (Gallstone),Male
+patient-proforma-v3,AP-NSVT-003,2025-08-28,baseline,without_svt,terminal_outcome,yes,,not_applicable,false,Unknown,Acute Pancreatitis,23 / Female,2025-09-20,"MODS (Resp, Liver, Coag, CV)",23,Biliary/Pregnancy,Mausmi Bagri,,Biliary/Pregnancy,Female
+patient-proforma-v3,AP-NSVT-004,2025-09-29,baseline,without_svt,enrolled,,,not_applicable,false,Unknown,Acute Pancreatitis,37 / Male,,,37,Alcohol,Radheshyam Parke,18.9,Alcohol,Male
+patient-proforma-v3,AP-NSVT-007,2025-12-04,baseline,without_svt,active,,,not_applicable,false,Unknown,Acute Pancreatitis,22 / Male,,,22,Idiopathic,Satyam Ahirwar,20.6,Idiopathic,Male
+patient-proforma-v3,AP-NSVT-008,2025-11-06,baseline,without_svt,active,,,not_applicable,false,Unknown,Acute Pancreatitis,35 / Male,,,35,Biliary/Idiopathic,Subhash Kumar Vishwakarma,20.5,Biliary/Idiopathic,Male
+patient-proforma-v3,AP-NSVT-009,2025-06-29,baseline,without_svt,enrolled,,,not_applicable,false,Unknown,Acute Pancreatitis,28 / Male,,,28,Alcohol,Rajesh Deshmukh,16.5,Alcohol,Male
+patient-proforma-v3,AP-SVT-001,2025-08-25,baseline,with_svt,active,,sv,,false,Unknown,Acute Pancreatitis,20 / Male,,,20,Idiopathic,Ayuesh Kirad,16.4,Idiopathic,Male
+patient-proforma-v3,AP-SVT-002,2025-08-28,baseline,with_svt,active,,sv,,false,Unknown,Acute Pancreatitis,34 / Male,,,34,Alcohol,Pramod Mevadha,,Alcohol,Male
+patient-proforma-v3,AP-SVT-003,2024-03-21,baseline,with_svt,active,,sv,,false,Unknown,Acute Pancreatitis,33 / Male,,,33,Alcohol + HTG,Bhagwan Das Malviya,30.0,Alcohol + HTG,Male
+patient-proforma-v3,AP-SVT-004,2025-09-14,baseline,with_svt,enrolled,,sv;pv,,false,Unknown,Acute Pancreatitis,19 / Male,,,19,Alcohol,Vishnu Devkaran,18.7,Alcohol,Male
+patient-proforma-v3,AP-SVT-005,2025-11-12,baseline,with_svt,terminal_outcome,yes,sv;pv,,false,Unknown,Acute Pancreatitis,26 / Male,2026-01-06,"MODS (Resp, Renal, Sepsis)",26,Alcohol,Ankit Chimaniya,19.9,Alcohol,Male
+patient-proforma-v3,AP-SVT-006,2025-12-08,baseline,with_svt,terminal_outcome,yes,sv,,false,Unknown,Acute Pancreatitis,57 / Male,2025-12-23,"MODS (Resp, CV, Sepsis)",57,Biliary (Gallstone),Yasin Khan,20.6,Biliary (Gallstone),Male

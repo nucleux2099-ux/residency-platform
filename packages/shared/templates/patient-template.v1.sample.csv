@@ -1,0 +1,3 @@
+template_id,patient_id,encounter_date,diagnosis,svt_status,ward,notes,source_files
+patient-template-v1,PAT-001,2026-02-17,Acute Pancreatitis,without_svt,Ward-A,Initial presentation,ct_scan.pdf;lab_panel.pdf
+patient-template-v1,PAT-002,2026-02-16,Acute Pancreatitis with SVT,with_svt,Ward-B,Follow-up day 2,

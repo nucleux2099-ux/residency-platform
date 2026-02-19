@@ -1,0 +1,11 @@
+node_modules/
+.pnpm-store/
+.env
+.env.local
+.venv/
+__pycache__/
+.pytest_cache/
+*.pyc
+apps/api/data/*.jsonl
+apps/web/.next/
+.DS_Store

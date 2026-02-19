@@ -1,0 +1,4 @@
+template_id,patient_id,encounter_date,diagnosis,visit_type,svt_status,vessel_involvement,ward,cohort_status,mortality,death_date,cause_of_death,recanalization_status,primary_endpoint_complete,notes,source_files
+patient-template-v2,AP-SVT-001,2026-02-17,Acute Pancreatitis with SVT,baseline,with_svt,pv;sv,Ward-A,active,no,,,pending,false,Initial baseline capture,cect_baseline.pdf;labs_day0.pdf
+patient-template-v2,AP-NSVT-003,2026-02-17,Acute Pancreatitis,discharge,without_svt,,Ward-B,completed,no,,,not_applicable,false,Discharge summary complete,
+patient-template-v2,AP-SVT-001,2026-05-17,SVT month 3 review,month3_followup,with_svt,pv;sv,OPD,completed,no,,,partial,true,Month-3 endpoint assessment,cect_month3.pdf

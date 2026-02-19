@@ -1,0 +1,109 @@
+{
+  "template_id": "patient-template-v2",
+  "version": 2,
+  "title": "Acute Pancreatitis SVT Timeline Intake",
+  "required_fields": [
+    "patient_id",
+    "encounter_date",
+    "diagnosis",
+    "visit_type",
+    "svt_status",
+    "ward",
+    "cohort_status"
+  ],
+  "fields": [
+    {
+      "key": "patient_id",
+      "label": "Patient ID (pseudonymous)",
+      "type": "string"
+    },
+    {
+      "key": "encounter_date",
+      "label": "Encounter Date",
+      "type": "date"
+    },
+    {
+      "key": "diagnosis",
+      "label": "Primary Diagnosis",
+      "type": "string"
+    },
+    {
+      "key": "visit_type",
+      "label": "Protocol Visit Type",
+      "type": "enum",
+      "options": [
+        "baseline",
+        "day7_reassessment",
+        "discharge",
+        "week2_followup",
+        "month1_followup",
+        "month3_followup"
+      ]
+    },
+    {
+      "key": "svt_status",
+      "label": "SVT Status",
+      "type": "enum",
+      "options": ["with_svt", "without_svt"]
+    },
+    {
+      "key": "vessel_involvement",
+      "label": "Vessels Involved",
+      "type": "enum_list",
+      "options": ["pv", "smv", "sv", "multiple", "unknown"],
+      "required_when": {
+        "svt_status": "with_svt"
+      }
+    },
+    {
+      "key": "ward",
+      "label": "Ward",
+      "type": "string"
+    },
+    {
+      "key": "cohort_status",
+      "label": "Cohort Status",
+      "type": "enum",
+      "options": ["screened", "enrolled", "active", "completed", "terminal_outcome"]
+    },
+    {
+      "key": "mortality",
+      "label": "Mortality",
+      "type": "enum",
+      "options": ["yes", "no"]
+    },
+    {
+      "key": "death_date",
+      "label": "Date of Death",
+      "type": "date",
+      "required_when": {
+        "mortality": "yes"
+      }
+    },
+    {
+      "key": "cause_of_death",
+      "label": "Cause of Death",
+      "type": "string",
+      "required_when": {
+        "mortality": "yes"
+      }
+    },
+    {
+      "key": "recanalization_status",
+      "label": "SVT Recanalization",
+      "type": "enum",
+      "options": ["pending", "complete", "partial", "none", "progressed", "not_applicable"]
+    },
+    {
+      "key": "primary_endpoint_complete",
+      "label": "Primary Endpoint Complete",
+      "type": "enum",
+      "options": [true, false]
+    },
+    {
+      "key": "notes",
+      "label": "Clinical Notes",
+      "type": "string"
+    }
+  ]
+}

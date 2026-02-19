@@ -1,0 +1,45 @@
+{
+  "template_id": "patient-template-v1",
+  "version": 1,
+  "title": "Acute Pancreatitis Intake",
+  "required_fields": [
+    "patient_id",
+    "encounter_date",
+    "diagnosis",
+    "svt_status",
+    "ward"
+  ],
+  "fields": [
+    {
+      "key": "patient_id",
+      "label": "Patient ID (pseudonymous)",
+      "type": "string"
+    },
+    {
+      "key": "encounter_date",
+      "label": "Encounter Date",
+      "type": "date"
+    },
+    {
+      "key": "diagnosis",
+      "label": "Primary Diagnosis",
+      "type": "string"
+    },
+    {
+      "key": "svt_status",
+      "label": "SVT Status",
+      "type": "enum",
+      "options": ["with_svt", "without_svt"]
+    },
+    {
+      "key": "ward",
+      "label": "Ward",
+      "type": "string"
+    },
+    {
+      "key": "notes",
+      "label": "Clinical Notes",
+      "type": "string"
+    }
+  ]
+}

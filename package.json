@@ -1,0 +1,18 @@
+{
+  "name": "residency-platform",
+  "private": true,
+  "packageManager": "pnpm@10.0.0",
+  "engines": {
+    "node": ">=20 <21"
+  },
+  "scripts": {
+    "setup:api": "cd apps/api && python3 -m venv .venv && .venv/bin/pip install -e .",
+    "dev:api": "cd apps/api && .venv/bin/python -m uvicorn app.main:app --host 127.0.0.1 --port 8000 --reload --reload-dir app --reload-exclude '.venv/*' --reload-exclude '**/__pycache__/*'",
+    "dev:web": "pnpm --filter @residency/web dev",
+    "dev": "pnpm run dev:api",
+    "scan:phi": "python3 ./scripts/scan_phi.py",
+    "redact:phi": "python3 ./scripts/redact_phi.py",
+    "build:web": "pnpm --filter @residency/web build",
+    "lint:web": "pnpm --filter @residency/web lint"
+  }
+}

@@ -1,0 +1,10 @@
+README.md
+pyproject.toml
+app/__init__.py
+app/config.py
+app/main.py
+residency_api.egg-info/PKG-INFO
+residency_api.egg-info/SOURCES.txt
+residency_api.egg-info/dependency_links.txt
+residency_api.egg-info/requires.txt
+residency_api.egg-info/top_level.txt

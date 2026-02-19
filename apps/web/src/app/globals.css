@@ -1,0 +1,29 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --foreground-rgb: 0, 0, 0;
+  --background-start-rgb: 214, 219, 220;
+  --background-end-rgb: 255, 255, 255;
+}
+
+body {
+  @apply bg-slate-50 text-slate-900;
+  font-feature-settings: "rlig" 1, "calt" 1;
+}
+
+/* Custom Components Layer for backward compatibility while refactoring */
+@layer components {
+  .app-shell {
+    @apply min-h-screen md:grid md:grid-cols-[280px_1fr];
+  }
+  
+  .sidebar {
+    @apply hidden md:grid gap-5 content-start bg-white border-r border-slate-200 p-6 h-screen sticky top-0 overflow-y-auto;
+  }
+
+  .kpi-card {
+    @apply bg-white border border-slate-200 rounded-xl shadow-sm p-5 grid gap-2 transition-all hover:shadow-md;
+  }
+}

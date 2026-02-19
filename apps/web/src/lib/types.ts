@@ -440,27 +440,3 @@ export interface PatientLabTrendPayload {
   metrics: PatientLabTrendMetric[];
 }
 
-export interface IngestionAttachmentAssistJob {
-  job_id: string;
-  status: "queued" | "processing" | "completed" | "failed" | string;
-  section: "lab" | "imaging" | string;
-  patient_id: string | null;
-  created_at: string;
-  updated_at: string;
-  started_at: string | null;
-  finished_at: string | null;
-  error: string | null;
-  uploaded_file: {
-    file_name: string;
-    stored_path: string;
-    size_bytes: number;
-  };
-  result: IngestionAttachmentAssistAck | null;
-  review: {
-    status: "not_ready" | "pending_review" | "accepted" | "rejected" | string;
-    decision: "accepted" | "rejected" | null;
-    reviewed_at: string | null;
-    reviewer_note: string | null;
-    applied_payload: Record<string, unknown> | null;
-  };
-}

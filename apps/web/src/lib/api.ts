@@ -30,13 +30,23 @@ import {
 
 export const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
 
+console.log(`[API Config] Using Base URL: '${API_BASE_URL}'`);
+
 async function getJson<T>(path: string): Promise<T> {
-  const res = await fetch(`${API_BASE_URL}${path}`, { cache: "no-store" });
-  if (!res.ok) {
-    throw new Error(`Request failed: ${res.status}`);
+  const url = (`${API_BASE_URL}${path}`);
+  console.log(`[API Request] Fetching: ${url}`);
+  try {
+    const res = await fetch(url, { cache: "no-store" });
+    if (!res.ok) {
+      console.error(`[API Error] ${res.status} ${res.statusText} for ${url}`);
+      throw new Error(`Request failed: ${res.status}`);
+    }
+    const body = (await res.json()) as ApiEnvelope<T>;
+    return body.data;
+  } catch (err) {
+    console.error(`[API Network Error] Failed to fetch ${url}:`, err);
+    throw err;
   }
-  const body = (await res.json()) as ApiEnvelope<T>;
-  return body.data;
 }
 
 async function postFormData<T>(path: string, formData: FormData): Promise<T> {

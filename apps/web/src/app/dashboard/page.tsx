@@ -14,7 +14,37 @@ function getCompletenessTone(score: number): "success" | "warning" | "danger" {
 }
 
 export default async function DashboardPage() {
-  const summary = await fetchAnalyticsSummary();
+  let summary;
+
+  try {
+    console.log("[Dashboard] Fetching analytics summary...");
+    summary = await fetchAnalyticsSummary();
+  } catch (err) {
+    console.error("[Dashboard] Failed to fetch analytics:", err);
+    return (
+      <section className="page space-y-6">
+        <PageHeader
+          title="Live Analytics Dashboard"
+          description="Daily control room for cohort progress, follow-up risk, and endpoint readiness."
+        />
+        <div className="rounded-lg border border-red-200 bg-red-50 p-6 text-red-900">
+          <h2 className="mb-2 text-lg font-bold">Backend Connection Failed</h2>
+          <p className="mb-4 text-sm text-red-800">
+            Could not connect to the API. This usually means the tunnel is down or the URL is incorrect.
+          </p>
+          <ul className="mb-4 list-disc pl-5 text-sm text-red-800">
+            <li>Ensure your local backend is running (<code>uvicorn</code>).</li>
+            <li>Ensure the Cloudflare tunnel is active.</li>
+            <li>Check Vercel Environment Variables (<code>NEXT_PUBLIC_API_URL</code>).</li>
+          </ul>
+          <div className="rounded bg-red-100 p-3 font-mono text-xs text-red-800 overflow-auto">
+            {String(err)}
+          </div>
+        </div>
+      </section>
+    );
+  }
+
   const enrollmentPct =
     summary.cohort_target > 0 ? Math.round((summary.total_patients / summary.cohort_target) * 100) : 0;
   const endpointTone = summary.endpoint_completion_rate >= 80 ? "success" : "warning";

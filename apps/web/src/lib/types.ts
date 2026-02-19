@@ -437,6 +437,9 @@ export interface PatientLabTrendMetric {
 export interface PatientLabTrendPayload {
   reports_considered: number;
   points_total: number;
+  metrics: PatientLabTrendMetric[];
+}
+
 export interface IngestionAttachmentAssistJob {
   job_id: string;
   status: "queued" | "processing" | "completed" | "failed" | string;
